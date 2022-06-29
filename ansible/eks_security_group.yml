@@ -1,0 +1,20 @@
+---
+- name: Remediate EKS cluster security group
+  hosts: localhost
+  gather_facts: false
+  vars_files: variables.yml
+  tasks:
+  - name: Gather EKS cluster facts
+    eks_cluster_facts:
+      profile: "{{ profile }}"
+      region: "{{ region }}"
+      cluster_name: "{{ cluster_name }}"
+    register: cluster_info
+  
+  - name: Remove non 433 security group ingress rules
+    remove_non_tcp_443_ingress_sg_rules:
+      profile: "{{ profile }}"
+      region: "{{ region }}"
+      security_group_id: "{{ item }}"
+    with_items:
+      - "{{ cluster_info['resources_vpc_config']['security_group_ids'] }}"
